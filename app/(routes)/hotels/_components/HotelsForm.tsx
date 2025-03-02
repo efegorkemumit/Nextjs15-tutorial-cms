@@ -43,8 +43,41 @@ const HotelsForm = () => {
     });
 
     const onSubmit = async (values: z.infer<typeof hotelFormSchema>) => {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
+
+        const hotelData = {
+            name: values.name,
+            description: values.description,
+            location: values.location,
+            address: values.address,
+            rating: values.rating || 0,
+            pricePerNight: values.pricePerNight,
+        }
+
+        try {
+
+            const response = await fetch("/api/hotels", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(hotelData),
+
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to add hotel");
+            }
+
+            console.log("Hotel added successfully");
+            form.reset();
+
+
+        } catch (error) {
+            console.error("Error adding hotel:", error);
+
+        }
+
+
         console.log(values)
     }
 
