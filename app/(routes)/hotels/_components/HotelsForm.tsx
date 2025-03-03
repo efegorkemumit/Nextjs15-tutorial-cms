@@ -15,6 +15,7 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { useHotelStore } from '@/stores/useHotelStore'
 
 
 const hotelFormSchema = z.object({
@@ -28,6 +29,7 @@ const hotelFormSchema = z.object({
 
 
 const HotelsForm = () => {
+    const { fetchHotels } = useHotelStore();
 
     const form = useForm<z.infer<typeof hotelFormSchema>>({
         resolver: zodResolver(hotelFormSchema),
@@ -70,7 +72,7 @@ const HotelsForm = () => {
 
             console.log("Hotel added successfully");
             form.reset();
-
+            fetchHotels();
 
         } catch (error) {
             console.error("Error adding hotel:", error);

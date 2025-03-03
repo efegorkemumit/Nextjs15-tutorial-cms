@@ -40,3 +40,63 @@ export async function POST(request:NextRequest) {
     }
     
 }
+
+export async function GET(request:Request) {
+    const { searchParams } = new URL(request.url);
+    const rating = searchParams.get("rating");
+    const priceMin = searchParams.get("priceMin");
+    const priceMax = searchParams.get("priceMax");
+    const name = searchParams.get("name");
+    const pageStr = searchParams.get("page") || "1";
+    const page = Number(pageStr);
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    const filters = [];
+
+    if (priceMin || priceMax) {
+        const priceFilter: any = {};
+        if (priceMin) {
+          priceFilter.gte = Number(priceMin);
+        }
+        if (priceMax) {
+          priceFilter.lte = Number(priceMax);
+        }
+        filters.push({ pricePerNight: priceFilter });
+      }
+
+      if (rating) {
+        filters.push({ rating: { gte: Number(rating) } });
+      }
+
+        
+    if (name) {
+        filters.push({ name: { contains: name, mode: "insensitive" } });
+      }
+
+      const whereClause = filters.length > 0 ? { AND: filters } : {};
+
+
+      try {
+
+        const hotels = await prismadb.hotel.findMany({
+            where: whereClause,
+            skip,
+            take: limit,
+            include: {
+              rooms: true,
+            },
+          });
+
+          const totalCount = await prismadb.hotel.count({ where: whereClause });
+
+          return NextResponse.json({ hotels, totalCount });
+
+      } catch (error) {
+        return NextResponse.json({ error: "Something went wrong!" }, { status: 500 });
+
+      }
+
+
+
+}
