@@ -36,10 +36,12 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Hotel, useHotelStore } from "@/stores/useHotelStore"
+import ActionCell from "./ActionCell"
+import EditHotelForm from "./EditHotelForm"
 
 
 
-export const columns: ColumnDef<Hotel>[] = [
+export const baseColumns: ColumnDef<Hotel>[] = [
     {
         accessorKey: "name",
         header: "Hotel Name",
@@ -63,35 +65,7 @@ export const columns: ColumnDef<Hotel>[] = [
         },
     },
 
-    {
-        id: "actions",
-        enableHiding: false,
-        cell: ({ row }) => {
-            const payment = row.original
-
-            return (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(payment.id)}
-                        >
-                            Copy payment ID
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>View customer</DropdownMenuItem>
-                        <DropdownMenuItem>View payment details</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )
-        },
-    },
+  
 ]
 
 export function HotelTable() {
@@ -119,6 +93,43 @@ export function HotelTable() {
 
         return () => clearTimeout(delayDebounceFn);
     }, [searchTerm, fetchHotels]);
+
+    const [selectedHotel, setSelectedHotel] = React.useState<Hotel | null>(null);
+    const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+
+
+    const  handleEditClick = (hotel: Hotel)=>{
+        setSelectedHotel(hotel)
+        setIsEditDialogOpen(true)
+
+    }
+
+    const columns = React.useMemo<ColumnDef<Hotel>[]>(() => {
+        return[
+            ...baseColumns,
+            {
+                id:"actions",
+                enableHiding:false,
+                cell:({row})=>{
+                    const hotel = row.original;
+                    return(
+                        <>
+                        <ActionCell
+                            hotel={hotel}
+                            onEditClick={handleEditClick}
+                        
+                        />
+                        
+                        </>
+                    )
+                }
+
+                                
+
+            }
+        ]
+        
+    },[])
 
 
     const table = useReactTable({
@@ -254,6 +265,12 @@ export function HotelTable() {
                     </Button>
                 </div>
             </div>
+            <EditHotelForm
+            open={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+            initialHotel={selectedHotel}
+            
+            />
         </div>
     )
 }
